@@ -1,0 +1,36 @@
+table {
+    border-collapse: collapse;
+    margin: 20px;
+}
+
+td {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    border: 1px solid black;
+    cursor: pointer;
+    position: relative;
+}
+
+th {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    border: 1px solid black;
+}
+
+.corazzata {
+    background-color: lightblue;
+}
+
+.sottomarino {
+    background-color: lightgreen;
+}
+
+.corvetta {
+    background-color: lightsalmon;
+}
+
+.lancia {
+    background-color: lightcoral;
+}

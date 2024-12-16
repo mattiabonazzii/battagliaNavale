@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Battaglia Navale LaRocca_Bonazzi</title>
+    <!--  <link rel="stylesheet" href="../css/style.css"> -->
+    <link rel="stylesheet" href="/style">
+</head>
+
+<body>
+    <h3 id="inizio">chat</h3>
+    <label for="cname">clienti connessi in chat </label>
+    <input type="text" id="cname" name="cname" size="2" value="" disabled style="width: 20px"><br>
+    <br>
+    <label for="fname">chat: </label>
+    <textarea id="fname" name="fname" value="" disabled style="width: 250px; height: 250px"></textarea><br>
+    <br>
+    <label for="Nickname">Nickname: </label>
+    <input type="text" id="Nickname" name="Nickname" value=""><br>
+    <br>
+    <label for="tname">io: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+    <input type="text" id="tname" name="tname" value=""><br>
+    <br>
+    <label for="select">tipo di comunicazione: </label>
+    <select id="usersMenu">
+        <option value="bc">Tutti</option>
+    </select>
+    <div>
+        <br>
+        <input type="button" name="invia" value="Invia" style="float:left;margin-left:75px;width:50px;height:30px"
+            onclick="gestisci()">
+    </div>
+    <div>
+        <input type="button" name="fine" value="fine" style="float:left;margin-left:79px;width:50px;height:30px"
+            onclick="endChat()">
+    </div>
+<br>
+    <h3>Tabellone Battaglia Navale</h3>
+    <table id="battlefield">
+        <thead>
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+                <th>F</th>
+                <th>G</th>
+                <th>H</th>
+                <th>I</th>
+                <th>J</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script>
+                for (let i = 1; i <= 10; i++) {
+                    document.write('<tr>');
+                    document.write(`<th>${i}</th>`);
+                    for (let j = 0; j < 10; j++) {
+                        const col = String.fromCharCode(65 + j); // Convert index to letter
+                        document.write(`<td id="cell-${i}-${col}" onclick="cellClick(${i}, '${col}')"></td>`);
+                    }
+                    document.write('</tr>');
+                }
+            </script>
+        </tbody>
+    </table>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://127.0.0.1:3000/');
+
+        function cellClick(row, col) {
+            alert(`Hai cliccato sulla cella ${row}${col}`);
+            socket.emit('cellClick', { row: row, col: col });
+        }
+
+        function gestisci() {
+            const testo = document.getElementById("tname").value;
+            const nick = document.getElementById("Nickname").value;
+            if (!testo || !nick) {
+                alert("Per favore, compilare i campi richiesti.");
+                return;
+            }
+            socket.emit("messaggio", `${nick}: ${testo}`, document.getElementById('usersMenu').value);
+            document.getElementById("fname").value += `${nick}: ${testo}\n`;
+            document.getElementById("tname").value = "";
+        }
+
+        socket.on("connesso", function (data) {
+            document.getElementById("inizio").innerHTML = `Chat Server in ascolto su IP: ${data}`;
+        });
+
+        socket.on("messaggio", function (data) {
+            document.getElementById("fname").value += data + "\n";
+        });
+
+        function endChat() {
+            socket.disconnect();
+            document.getElementById("cname").value = "";
+            document.getElementById("tname").value = "";
+            document.getElementById("fname").value = "";
+            document.getElementById("Nickname").value = "";
+        }
+
+        function placeShips() {
+            const rows = 10;
+            const cols = 10;
+
+            const navi = [
+                { name: 'corazzata', size: 4, count: 1 },
+                { name: 'sottomarino', size: 3, count: 3 },
+                { name: 'corvetta', size: 2, count: 3 },
+                { name: 'lancia', size: 1, count: 2 }
+            ];
+
+            const grid = Array.from({ length: rows }, () => Array(cols).fill(false));
+
+            function canPlaceShip(x, y, size, direction) {
+                if (direction === 'horizontal' && y + size > cols) return false;
+                if (direction === 'vertical' && x + size > rows) return false;
+
+                for (let i = 0; i < size; i++) {
+                    const checkX = direction === 'horizontal' ? x : x + i;
+                    const checkY = direction === 'horizontal' ? y + i : y;
+                    if (grid[checkX][checkY]) return false;
+                }
+
+                return true;
+            }
+
+            function placeShip(x, y, size, direction, className) {
+                for (let i = 0; i < size; i++) {
+                    const placeX = direction === 'horizontal' ? x : x + i;
+                    const placeY = direction === 'horizontal' ? y + i : y;
+                    grid[placeX][placeY] = true;
+                    const cell = document.getElementById(`cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`);
+                    cell.classList.add(className);
+                }
+            }
+
+            navi.forEach(nave => {
+                for (let i = 0; i < nave.count; i++) {
+                    let placed = false;
+                    while (!placed) {
+                        const x = Math.floor(Math.random() * rows);
+                        const y = Math.floor(Math.random() * cols);
+                        const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+
+                        if (canPlaceShip(x, y, nave.size, direction)) {
+                            placeShip(x, y, nave.size, direction, nave.name);
+                            placed = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        placeShips();
+    </script>
+</body>
+
+</html>
