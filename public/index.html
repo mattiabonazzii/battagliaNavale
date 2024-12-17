@@ -4,39 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Battaglia Navale LaRocca_Bonazzi</title>
-    <!--  <link rel="stylesheet" href="../css/style.css"> -->
     <link rel="stylesheet" href="/style">
 </head>
 
 <body>
-    <h3 id="inizio">chat</h3>
-    <label for="cname">clienti connessi in chat </label>
-    <input type="text" id="cname" name="cname" size="2" value="" disabled style="width: 20px"><br>
-    <br>
-    <label for="fname">chat: </label>
-    <textarea id="fname" name="fname" value="" disabled style="width: 250px; height: 250px"></textarea><br>
-    <br>
-    <label for="Nickname">Nickname: </label>
-    <input type="text" id="Nickname" name="Nickname" value=""><br>
-    <br>
-    <label for="tname">io: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-    <input type="text" id="tname" name="tname" value=""><br>
-    <br>
-    <label for="select">tipo di comunicazione: </label>
-    <select id="usersMenu">
-        <option value="bc">Tutti</option>
-    </select>
-    <div>
-        <br>
-        <input type="button" name="invia" value="Invia" style="float:left;margin-left:75px;width:50px;height:30px"
-            onclick="gestisci()">
-    </div>
-    <div>
-        <input type="button" name="fine" value="fine" style="float:left;margin-left:79px;width:50px;height:30px"
-            onclick="endChat()">
-    </div>
-<br>
-    <h3>Tabellone Battaglia Navale</h3>
+    <h3>Tabellone Battaglia Navale - Con Navi</h3>
     <table id="battlefield">
         <thead>
             <tr>
@@ -54,20 +26,32 @@
             </tr>
         </thead>
         <tbody>
-            <script>
-                for (let i = 1; i <= 10; i++) {
-                    document.write('<tr>');
-                    document.write(`<th>${i}</th>`);
-                    for (let j = 0; j < 10; j++) {
-                        const col = String.fromCharCode(65 + j); // Convert index to letter
-                        document.write(`<td id="cell-${i}-${col}" onclick="cellClick(${i}, '${col}')"></td>`);
-                    }
-                    document.write('</tr>');
-                }
-            </script>
+            <script src="/creaTabella" onload="creaTabella('cell')"></script>
         </tbody>
     </table>
 
+    <h3>Tabellone Battaglia Navale - Clicca per Inserire X</h3>
+    <table id="playerGrid">
+        <thead>
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+                <th>F</th>
+                <th>G</th>
+                <th>H</th>
+                <th>I</th>
+                <th>J</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script src="/creaTabella" onload="creaTabella('attack')"></script>
+        </tbody>
+    </table>
+    <!-- Script server -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io.connect('http://127.0.0.1:3000/');
@@ -77,32 +61,13 @@
             socket.emit('cellClick', { row: row, col: col });
         }
 
-        function gestisci() {
-            const testo = document.getElementById("tname").value;
-            const nick = document.getElementById("Nickname").value;
-            if (!testo || !nick) {
-                alert("Per favore, compilare i campi richiesti.");
-                return;
+        function markCell(row, col) {
+            const cell = document.getElementById(`attack-${row}-${col}`);
+            if (cell.innerHTML !== "X") {
+                cell.innerHTML = "X";
+            } else {
+                cell.innerHTML = "";
             }
-            socket.emit("messaggio", `${nick}: ${testo}`, document.getElementById('usersMenu').value);
-            document.getElementById("fname").value += `${nick}: ${testo}\n`;
-            document.getElementById("tname").value = "";
-        }
-
-        socket.on("connesso", function (data) {
-            document.getElementById("inizio").innerHTML = `Chat Server in ascolto su IP: ${data}`;
-        });
-
-        socket.on("messaggio", function (data) {
-            document.getElementById("fname").value += data + "\n";
-        });
-
-        function endChat() {
-            socket.disconnect();
-            document.getElementById("cname").value = "";
-            document.getElementById("tname").value = "";
-            document.getElementById("fname").value = "";
-            document.getElementById("Nickname").value = "";
         }
 
         function placeShips() {
@@ -118,6 +83,7 @@
 
             const grid = Array.from({ length: rows }, () => Array(cols).fill(false));
 
+            // controlla che le celle della tabella non siano già occupate
             function canPlaceShip(x, y, size, direction) {
                 if (direction === 'horizontal' && y + size > cols) return false;
                 if (direction === 'vertical' && x + size > rows) return false;
@@ -140,7 +106,7 @@
                     cell.classList.add(className);
                 }
             }
-
+            // per la generazione della posizione delle navi
             navi.forEach(nave => {
                 for (let i = 0; i < nave.count; i++) {
                     let placed = false;

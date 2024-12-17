@@ -35,7 +35,7 @@ function requestAnswerer(pathUrl, filePath, response) {
 
 function requestHandler(request, response) {
     const urlPath = request.url;
-
+    let numUtente0;
     if (request.method === "GET") {
         switch (urlPath) {
             case "/":
@@ -44,6 +44,10 @@ function requestHandler(request, response) {
             case "/style":
                 requestAnswerer(urlPath, "style/style.css", response);
                 break;
+            case "/creaTabella":
+                requestAnswerer(urlPath, "script/tabella.js", response);
+                break;
+
             default:
                 response.writeHead(404, { 'Content-Type': 'text/html' });
                 response.end(`<h1>404 - Page Not Found</h1>`);
