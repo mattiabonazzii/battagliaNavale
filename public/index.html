@@ -56,18 +56,13 @@
     <script>
         const socket = io.connect('http://127.0.0.1:3000/');
 
-        function cellClick(row, col) {
-            alert(`Hai cliccato sulla cella ${row}${col}`);
-            socket.emit('cellClick', { row: row, col: col });
-        }
-
+        //Metodo per marcare la cella della tabella avversaria
         function markCell(row, col) {
-            const cell = document.getElementById(`attack-${row}-${col}`);
-            if (cell.innerHTML !== "X") {
-                cell.innerHTML = "X";
-            } else {
-                cell.innerHTML = "";
-            }
+            const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
+            if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
+                return;
+
+            cell.innerHTML = "X";// altrimenti marca la cella con una X
         }
 
         function placeShips() {
