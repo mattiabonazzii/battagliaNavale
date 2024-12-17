@@ -12,3 +12,4 @@ function creaTabella(id) {
         document.write('</tr>');
     }
 }
+

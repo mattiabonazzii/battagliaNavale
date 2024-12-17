@@ -56,29 +56,53 @@
     <script>
         const socket = io.connect('http://127.0.0.1:3000/');
 
+        socket.on('connect', () => {
+            console.log('Connesso al server!');
+        });
+
+        let opponentId;
+
+        socket.on('stato', (numClienti, users) => {
+            console.log('Utenti connessi:', users); // Stampa gli ID connessi
+            // Seleziona un avversario (esempio: il primo ID diverso dal proprio)
+            opponentId = users.find(id => id !== socket.id);
+        });
+
+        function sendHit(row, col, opponent) {
+            socket.emit('colpo', { row: row - 1, col: col.charCodeAt(0) - 65, opponent });
+        }
+
         //Metodo per marcare la cella della tabella avversaria
         function markCell(row, col) {
             const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
             if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
                 return;
 
+            sendHit(row, col, opponentId);
+            console.log("cristo dio")
             cell.innerHTML = "X";// altrimenti marca la cella con una X
         }
 
+        let shipGrid = []; // Matrice delle navi (10x10)
+
+        function initializeGrid() {
+            shipGrid = Array.from({ length: 10 }, () => Array(10).fill(0));
+        }
+
         function placeShips() {
+            initializeGrid(); // Inizializza la matrice vuota (0: acqua, >0: nave)
+
             const rows = 10;
             const cols = 10;
 
             const navi = [
-                { name: 'corazzata', size: 4, count: 1 },
-                { name: 'sottomarino', size: 3, count: 3 },
-                { name: 'corvetta', size: 2, count: 3 },
-                { name: 'lancia', size: 1, count: 2 }
+                { name: 'corazzata', size: 4, count: 1, id: 1 },
+                { name: 'sottomarino', size: 3, count: 3, id: 2 },
+                { name: 'corvetta', size: 2, count: 3, id: 3 },
+                { name: 'lancia', size: 1, count: 2, id: 4 }
             ];
 
-            const grid = Array.from({ length: rows }, () => Array(cols).fill(false));
-
-            // controlla che le celle della tabella non siano già occupate
+            // Controlla che la nave possa essere posizionata
             function canPlaceShip(x, y, size, direction) {
                 if (direction === 'horizontal' && y + size > cols) return false;
                 if (direction === 'vertical' && x + size > rows) return false;
@@ -86,22 +110,27 @@
                 for (let i = 0; i < size; i++) {
                     const checkX = direction === 'horizontal' ? x : x + i;
                     const checkY = direction === 'horizontal' ? y + i : y;
-                    if (grid[checkX][checkY]) return false;
+                    if (shipGrid[checkX][checkY] !== 0) return false;
                 }
-
                 return true;
             }
 
-            function placeShip(x, y, size, direction, className) {
+            // Posiziona la nave nella matrice e nella tabella
+            function placeShip(x, y, size, direction, id) {
                 for (let i = 0; i < size; i++) {
                     const placeX = direction === 'horizontal' ? x : x + i;
                     const placeY = direction === 'horizontal' ? y + i : y;
-                    grid[placeX][placeY] = true;
+
+                    shipGrid[placeX][placeY] = id; // Salva l'ID della nave
+                    console.log(placeX, placeY);
                     const cell = document.getElementById(`cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`);
-                    cell.classList.add(className);
+                    cell.classList.add('nave');
                 }
+                console.log(shipGrid);
+                alert("placeShip")
             }
-            // per la generazione della posizione delle navi
+
+            // Generazione casuale delle navi
             navi.forEach(nave => {
                 for (let i = 0; i < nave.count; i++) {
                     let placed = false;
@@ -111,12 +140,16 @@
                         const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
 
                         if (canPlaceShip(x, y, nave.size, direction)) {
-                            placeShip(x, y, nave.size, direction, nave.name);
+                            placeShip(x, y, nave.size, direction, nave.id);
                             placed = true;
                         }
                     }
                 }
             });
+
+            // Invia la matrice al server
+            console.log("Matrice delle navi:", shipGrid);
+            socket.emit('naviPosizionate', shipGrid); // Invia la matrice al server
         }
 
         placeShips();

@@ -75,6 +75,9 @@ const io = require("socket.io")(server, {
     },
 });
 
+const playerShips = {};
+
+
 // Handle WebSocket connections
 io.sockets.on('connection', function (socket) {
     // Store the socket ID in the session
@@ -90,15 +93,23 @@ io.sockets.on('connection', function (socket) {
     io.emit('stato', numClienti, users);
     console.log('Clienti connessi:', numClienti);
 
-    // Handle incoming messages
-    socket.on('messaggio', function (data, userId) {
-        console.log(`Messaggio ricevuto da ${socket.id}: ${data}`);
-        if (userId && userId !== 'bc') {
-            // Send private message
-            socket.to(userId).emit('messaggio', `PM da ${socket.id}: ${data}`);
+    socket.on('naviPosizionate', (matriceNavi) => {
+        playerShips[socket.id] = matriceNavi;
+        console.log(`Matrice ricevuta da ${socket.id}:`, matriceNavi);
+    });
+
+    // Ricevi un colpo e controlla se va a segno
+    socket.on('colpo', (target) => {
+        console.log("on colpo");
+        const { row, col, opponentId } = target;
+        console.log("ciao")
+        console.log(playerShips[opponentId] && playerShips[opponentId][row][col] >= 0)
+        if (playerShips[opponentId] && playerShips[opponentId][row][col] >= 0) {
+            io.to(socket.id).emit('esitoColpo', { success: true, message: "Colpo a segno!" });
+            console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
         } else {
-            // Broadcast message
-            socket.broadcast.emit('messaggio', data);
+            io.to(socket.id).emit('esitoColpo', { success: false, message: "Colpo mancato!" });
+            console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
         }
     });
 
@@ -114,7 +125,7 @@ io.sockets.on('connection', function (socket) {
         }
 
         // Notify all clients about the updated user list
-        io.emit('updateUsers', users);
+        io.emit('stato', users);
         console.log('Utenti connessi:', users);
     });
 });
