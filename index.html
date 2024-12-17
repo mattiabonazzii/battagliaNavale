@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Battaglia Navale LaRocca_Bonazzi</title>
+    <link rel="stylesheet" href="/style">
+</head>
+
+<body>
+    <h3>Tabellone Battaglia Navale - Con Navi</h3>
+    <table id="battlefield">
+        <thead>
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+                <th>F</th>
+                <th>G</th>
+                <th>H</th>
+                <th>I</th>
+                <th>J</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script src="/creaTabella" onload="creaTabella('cell')"></script>
+        </tbody>
+    </table>
+
+    <h3>Tabellone Battaglia Navale - Clicca per Inserire X</h3>
+    <table id="playerGrid">
+        <thead>
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+                <th>F</th>
+                <th>G</th>
+                <th>H</th>
+                <th>I</th>
+                <th>J</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script src="/creaTabella" onload="creaTabella('attack')"></script>
+        </tbody>
+    </table>
+    <!-- Script server -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://127.0.0.1:3000/');
+
+        //Metodo per marcare la cella della tabella avversaria
+        function markCell(row, col) {
+            const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
+            if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
+                return;
+
+            cell.innerHTML = "X";// altrimenti marca la cella con una X
+        }
+
+        function placeShips() {
+            const rows = 10;
+            const cols = 10;
+
+            const navi = [
+                { name: 'corazzata', size: 4, count: 1 },
+                { name: 'sottomarino', size: 3, count: 3 },
+                { name: 'corvetta', size: 2, count: 3 },
+                { name: 'lancia', size: 1, count: 2 }
+            ];
+
+            const grid = Array.from({ length: rows }, () => Array(cols).fill(false));
+
+            // controlla che le celle della tabella non siano già occupate
+            function canPlaceShip(x, y, size, direction) {
+                if (direction === 'horizontal' && y + size > cols) return false;
+                if (direction === 'vertical' && x + size > rows) return false;
+
+                for (let i = 0; i < size; i++) {
+                    const checkX = direction === 'horizontal' ? x : x + i;
+                    const checkY = direction === 'horizontal' ? y + i : y;
+                    if (grid[checkX][checkY]) return false;
+                }
+
+                return true;
+            }
+
+            function placeShip(x, y, size, direction, className) {
+                for (let i = 0; i < size; i++) {
+                    const placeX = direction === 'horizontal' ? x : x + i;
+                    const placeY = direction === 'horizontal' ? y + i : y;
+                    grid[placeX][placeY] = true;
+                    const cell = document.getElementById(`cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`);
+                    cell.classList.add(className);
+                }
+            }
+            // per la generazione della posizione delle navi
+            navi.forEach(nave => {
+                for (let i = 0; i < nave.count; i++) {
+                    let placed = false;
+                    while (!placed) {
+                        const x = Math.floor(Math.random() * rows);
+                        const y = Math.floor(Math.random() * cols);
+                        const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+
+                        if (canPlaceShip(x, y, nave.size, direction)) {
+                            placeShip(x, y, nave.size, direction, nave.name);
+                            placed = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        placeShips();
+    </script>
+</body>
+
+</html>
