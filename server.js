@@ -101,7 +101,7 @@ io.sockets.on('connection', function (socket) {
             matriceNavi.every(row => Array.isArray(row) && row.length === 10)
         ) {
             playerShips[socket.id] = matriceNavi; // Salva la matrice
-            console.log(`Matrice ricevuta correttamente da ${socket.id}:`, matriceNavi);
+            console.log(`Matrice ricevuta correttamente da ${socket.id}:`);
         } else {
             console.error(`Errore: matrice non valida ricevuta da ${socket.id}:`, matriceNavi);
             socket.emit('errore', { message: 'La matrice inviata non è valida.' });
@@ -116,12 +116,12 @@ io.sockets.on('connection', function (socket) {
         const opponentId = opponent;
 
         // Verifica che la matrice dell'avversario esista e sia valida
-        if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
-            if (playerShips[opponentId][row][col] >= 0) {
-                io.to(socket.id).emit('esitoColpo', { success: true, message: "Colpo a segno!" });
+        if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined'){
+            if (playerShips[opponentId][row][col] > 0) {
+                io.to(socket.id).emit('esitoColpo', true, "Colpo a segno!" );
                 console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             } else {
-                io.to(socket.id).emit('esitoColpo', { success: false, message: "Colpo mancato!" });
+                io.to(socket.id).emit('esitoColpo', false, "Colpo mancato!" );
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             }
         } else {
