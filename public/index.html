@@ -64,8 +64,13 @@
             opponentId = users.find(id => id !== socket.id);
         });
 
+        socket.on('errore', (messaggio) => {
+            alert(messaggio);
+        })
+
         function sendHit(row, col, opponent) {
-            socket.emit('colpo', { row: row - 1, col: col.charCodeAt(0) - 65, opponent });
+            console.log(opponent)
+            socket.emit('colpo', row - 1,col.charCodeAt(0) - 65, opponent );
         }
 
         //Metodo per marcare la cella della tabella avversaria
@@ -75,7 +80,6 @@
                 return;
 
             sendHit(row, col, opponentId);
-            console.log("cristo dio")
             cell.innerHTML = "X";// altrimenti marca la cella con una X
         }
 
@@ -86,8 +90,7 @@
         }
 
         function placeShips() {
-            initializeGrid(); // Inizializza la matrice vuota (0: acqua, >0: nave)
-
+            initializeGrid()
             const rows = 10;
             const cols = 10;
 
@@ -98,33 +101,34 @@
                 { name: 'lancia', size: 1, count: 2, id: 4 }
             ];
 
-            // Controlla che la nave possa essere posizionata
+            // Verifica se è possibile posizionare una nave
             function canPlaceShip(x, y, size, direction) {
                 if (direction === 'horizontal' && y + size > cols) return false;
                 if (direction === 'vertical' && x + size > rows) return false;
 
                 for (let i = 0; i < size; i++) {
-                    const checkX = direction === 'horizontal' ? x : x + i;
-                    const checkY = direction === 'horizontal' ? y + i : y;
-                    if (shipGrid[checkX][checkY] !== 0) return false;
+                    const placeX = direction === 'horizontal' ? x : x + i;
+                    const placeY = direction === 'horizontal' ? y + i : y;
+                    if (shipGrid[placeX][placeY] !== 0) return false;
                 }
+
                 return true;
             }
 
-            // Posiziona la nave nella matrice e nella tabella
-            function placeShip(x, y, size, direction, id) {
+            // Posiziona una nave nella matrice e aggiorna la griglia HTML
+            function placeShip(x, y, size, direction, className) {
                 for (let i = 0; i < size; i++) {
                     const placeX = direction === 'horizontal' ? x : x + i;
                     const placeY = direction === 'horizontal' ? y + i : y;
 
-                    shipGrid[placeX][placeY] = id; // Salva l'ID della nave
-                    const cell = document.getElementById(`cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`);
-                    cell.classList.add('nave');
+                    shipGrid[placeX][placeY] = size;
+                    const cellId = `cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`;
+                    const cell = document.getElementById(cellId);
+                    cell.classList.add(className);
                 }
-                console.log(shipGrid);
             }
 
-            // Generazione casuale delle navi
+            // Genera le navi
             navi.forEach(nave => {
                 for (let i = 0; i < nave.count; i++) {
                     let placed = false;
@@ -134,18 +138,17 @@
                         const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
 
                         if (canPlaceShip(x, y, nave.size, direction)) {
-                            placeShip(x, y, nave.size, direction, nave.id);
+                            placeShip(x, y, nave.size, direction, nave.name);
                             placed = true;
                         }
                     }
                 }
             });
-
-            // Invia la matrice al server
-            console.log("Matrice delle navi:", shipGrid);
-            socket.emit('naviPosizionate', shipGrid); // Invia la matrice al server
+            console.log(shipGrid);
+            socket.emit('naviPosizionate', shipGrid);
         }
 
+        // Richiama la funzione per posizionare le navi
         placeShips();
     </script>
 </body>

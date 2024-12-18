@@ -75,8 +75,7 @@ const io = require("socket.io")(server, {
     },
 });
 
-const playerShips = {};
-
+const playerShips = {}; // Oggetto per salvare le navi di ciascun giocatore
 
 // Handle WebSocket connections
 io.sockets.on('connection', function (socket) {
@@ -93,23 +92,41 @@ io.sockets.on('connection', function (socket) {
     io.emit('stato', numClienti, users);
     console.log('Clienti connessi:', numClienti);
 
+    // Ricezione della matrice delle navi
     socket.on('naviPosizionate', (matriceNavi) => {
-        playerShips[socket.id] = matriceNavi;
-        console.log(`Matrice ricevuta da ${socket.id}:`, matriceNavi);
+        // Validare che la matrice sia un array 10x10
+        if (
+            Array.isArray(matriceNavi) &&
+            matriceNavi.length === 10 &&
+            matriceNavi.every(row => Array.isArray(row) && row.length === 10)
+        ) {
+            playerShips[socket.id] = matriceNavi; // Salva la matrice
+            console.log(`Matrice ricevuta correttamente da ${socket.id}:`, matriceNavi);
+        } else {
+            console.error(`Errore: matrice non valida ricevuta da ${socket.id}:`, matriceNavi);
+            socket.emit('errore', { message: 'La matrice inviata non è valida.' });
+        }
     });
 
     // Ricevi un colpo e controlla se va a segno
-    socket.on('colpo', (target) => {
+    socket.on('colpo', (r, c, opponent) => {
         console.log("on colpo");
-        const { row, col, opponentId } = target;
-        console.log("ciao")
-        console.log(playerShips[opponentId] && playerShips[opponentId][row][col] >= 0)
-        if (playerShips[opponentId] && playerShips[opponentId][row][col] >= 0) {
-            io.to(socket.id).emit('esitoColpo', { success: true, message: "Colpo a segno!" });
-            console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
+        const row = r;
+        const col = c;
+        const opponentId = opponent;
+
+        // Verifica che la matrice dell'avversario esista e sia valida
+        if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
+            if (playerShips[opponentId][row][col] >= 0) {
+                io.to(socket.id).emit('esitoColpo', { success: true, message: "Colpo a segno!" });
+                console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
+            } else {
+                io.to(socket.id).emit('esitoColpo', { success: false, message: "Colpo mancato!" });
+                console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
+            }
         } else {
-            io.to(socket.id).emit('esitoColpo', { success: false, message: "Colpo mancato!" });
-            console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
+            console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
+            socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.' );
         }
     });
 
@@ -118,13 +135,15 @@ io.sockets.on('connection', function (socket) {
         numClienti--;
         console.log(`Cliente disconnesso: ${socket.id}`);
 
-        // Remove the disconnected user from the list
+        // Rimuovi l'utente disconnesso dalla lista
         const index = users.indexOf(socket.id);
         if (index !== -1) {
             users.splice(index, 1);
         }
 
-        // Notify all clients about the updated user list
+        // Rimuovi la matrice delle navi dell'utente disconnesso
+        delete playerShips[socket.id];
+
         io.emit('stato', users);
         console.log('Utenti connessi:', users);
     });
