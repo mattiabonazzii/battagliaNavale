@@ -88,16 +88,23 @@ const io = require("socket.io")(server, {
 
 const playerShips = {}; // Oggetto per salvare le navi di ciascun giocatore
 
-// Handle WebSocket connections
+// CREA STANZE!
 io.sockets.on('connection', function (socket) {
     if(users.length == 2){
         socket.emit('disconnettiti', '<h1> Ci dispiace, non c\'è posto per te ora, riprova più tardi</h1>'); 
         //client si disconnette e apre una nuova pagina html con scritto messaggio di disconnessione
     }
+    
+    if(users.length == 1){ 
+        // è un modo un po storto per evitare che il primo client possa mandare colpi quando il secondo non si è ancora connesso
+        socket.emit('yourTurn', true);
+    }
     // Store the socket ID in the session
     socket.username = socket.id;
     users.push(socket.id); // Add the connected user to the list
     console.log('Cliente connesso: ' + socket.id);
+
+    
 
     // Notify the client about the connection
     socket.emit('connesso', `${ip} porta: ${port}`);
@@ -139,11 +146,11 @@ io.sockets.on('connection', function (socket) {
                 io.to(socket.id).emit('esitoColpo', false, "Mancato!");
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             }
+            io.to(users.find(id => id != socket.id)).emit('yourTurn', true);
         } else {
             console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
             socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.');
         }
-        io.to(users.find(id => id != socket.io)).emit('yourTurn', true);
     });
 
     // Handle disconnection
