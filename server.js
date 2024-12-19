@@ -139,6 +139,7 @@ io.sockets.on('connection', function (socket) {
             console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
             socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.');
         }
+        io.to(users.find(id => id != socket.id)).emit('yourTurn', true);
     });
 
     // Handle disconnection
