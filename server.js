@@ -90,6 +90,10 @@ const playerShips = {}; // Oggetto per salvare le navi di ciascun giocatore
 
 // Handle WebSocket connections
 io.sockets.on('connection', function (socket) {
+    if(users.length == 2){
+        socket.emit('disconnettiti', '<h1> Ci dispiace, non c\'è posto per te ora, riprova più tardi</h1>'); 
+        //client si disconnette e apre una nuova pagina html con scritto messaggio di disconnessione
+    }
     // Store the socket ID in the session
     socket.username = socket.id;
     users.push(socket.id); // Add the connected user to the list
@@ -139,6 +143,7 @@ io.sockets.on('connection', function (socket) {
             console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
             socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.');
         }
+        io.to(users.find(id => id != socket.io)).emit('yourTurn', true);
     });
 
     // Handle disconnection

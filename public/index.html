@@ -131,6 +131,8 @@
                 sendHit(row, col, opponentId);
                 isMyTurn = false;
                 cell.innerHTML = "X";// altrimenti marca la cella con una X
+            }else{
+                alert('non è il tuo turno!!!');
             }
         }
 
@@ -224,10 +226,10 @@
 
         // Richiama la funzione per posizionare le navi
         placeShips();
-
+</script>
 <script src="/bloccaRicarica"></script>  <!-- script che blocca la ricarica del documento per evitare incongruenza nelle matrici  -->
 
-    </script>
+    
 </body>
 
 </html>
