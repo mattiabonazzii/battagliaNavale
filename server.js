@@ -9,6 +9,7 @@
 const http = require('http'); // Require http server
 const fs = require('fs'); // Require filesystem module
 const path = require('path'); // Require path module for absolute file paths
+const { url } = require('inspector');
 const port = 3000; // Set the server port
 const ip = "127.0.0.1"; // Set the server IP
 let numClienti = 0; // Counter for connected clients
@@ -54,6 +55,9 @@ function requestHandler(request, response) {
             case "/creaTabella":
                 requestAnswerer(urlPath, "script/tabella.js", response);
                 break;
+            case "/bloccaRicarica":
+                requestAnswerer(urlPath, "script/bloccaRicarica.js", response)
+                break;
 
             default:
                 response.writeHead(404, { 'Content-Type': 'text/html' });
@@ -86,10 +90,6 @@ const playerShips = {}; // Oggetto per salvare le navi di ciascun giocatore
 
 // Handle WebSocket connections
 io.sockets.on('connection', function (socket) {
-    if(users.length == 2){
-        socket.emit('disconnettiti', '<h1> Ci dispiace, non c\'è posto per te ora, riprova più tardi</h1>'); 
-        //client si disconnette e apre una nuova pagina html con scritto messaggio di disconnessione
-    }
     // Store the socket ID in the session
     socket.username = socket.id;
     users.push(socket.id); // Add the connected user to the list
@@ -129,17 +129,16 @@ io.sockets.on('connection', function (socket) {
         // Verifica che la matrice dell'avversario esista e sia valida
         if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
             if (playerShips[opponentId][row][col] > 0) {
-                socket.emit('esitoColpo', true, "Colpito!");
+                io.to(socket.id).emit('esitoColpo', true, "Colpito!");
                 console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             } else {
-                socket.emit('esitoColpo', false, "Mancato!");
+                io.to(socket.id).emit('esitoColpo', false, "Mancato!");
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             }
         } else {
             console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
             socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.');
         }
-        io.to(users.find(id => id != socket.id)).emit('yourTurn', true);
     });
 
     // Handle disconnection
