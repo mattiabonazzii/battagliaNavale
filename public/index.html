@@ -73,8 +73,10 @@
             if (esito) {
                 document.getElementById(`attack-${hitRow}-${hitCol}`).style.backgroundColor = "red"; //prende l'indirizzo della colonna
                 pezzi_avversari -= 1;
-                alert(`${messaggio}, Mancano: ${pezzi_avversari} segmenti`);
-            }//volendo, mettere alert anche se si sbaglia
+                alert(`${messaggio} Mancano: ${pezzi_avversari} segmenti`);
+            }
+            else
+                alert(messaggio)
         })
 
         function sendHit(row, col, opponent) {
