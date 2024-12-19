@@ -35,7 +35,6 @@ function requestAnswerer(pathUrl, filePath, response) {
 
 function requestHandler(request, response) {
     const urlPath = request.url;
-    let numUtente0;
     if (request.method === "GET") {
         switch (urlPath) {
             case "/":
@@ -116,17 +115,17 @@ io.sockets.on('connection', function (socket) {
         const opponentId = opponent;
 
         // Verifica che la matrice dell'avversario esista e sia valida
-        if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined'){
+        if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
             if (playerShips[opponentId][row][col] > 0) {
-                io.to(socket.id).emit('esitoColpo', true, "Colpo a segno!" );
+                io.to(socket.id).emit('esitoColpo', true, "Colpito!");
                 console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             } else {
-                io.to(socket.id).emit('esitoColpo', false, "Colpo mancato!" );
+                io.to(socket.id).emit('esitoColpo', false, "Mancato!");
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             }
         } else {
             console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
-            socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.' );
+            socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.');
         }
     });
 
@@ -147,4 +146,12 @@ io.sockets.on('connection', function (socket) {
         io.emit('stato', users);
         console.log('Utenti connessi:', users);
     });
+
+    //invia al client perdente il relatico messaggio
+    socket.on('vittoria', (opponentId) => {
+        io.to(opponentId).emit('sconfitta', "Hai perso...");
+    });
+
 });
+
+
