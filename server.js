@@ -1,3 +1,11 @@
+/**
+ * TODO:
+- bottone per effettuare rivincita  (azzera e abilita di nuovo i click sulle caselle)
+- turni
+- magari permettere a solo i primi due socket collegati di giocare
+- magari mettere il contatore di pezzi nemici in una piccola legenda sulla destra piuttosto che nell'alert
+- personalmente rimuoverei gli l'alert (tranne per vittoria e sconfitta) e metterei una stringa vicina alla tabella che ci notifica dell'esito del colpo
+ */
 const http = require('http'); // Require http server
 const fs = require('fs'); // Require filesystem module
 const path = require('path'); // Require path module for absolute file paths
@@ -152,6 +160,9 @@ io.sockets.on('connection', function (socket) {
         io.to(opponentId).emit('sconfitta', "Hai perso...");
     });
 
+    socket.on('rivincita', (opponentId)=>{
+        io.to(opponentId).emit('rivincita')
+    });
 });
 
 
