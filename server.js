@@ -86,6 +86,10 @@ const playerShips = {}; // Oggetto per salvare le navi di ciascun giocatore
 
 // Handle WebSocket connections
 io.sockets.on('connection', function (socket) {
+    if(users.length == 2){
+        socket.emit('disconnettiti', '<h1> Ci dispiace, non c\'è posto per te ora, riprova più tardi</h1>'); 
+        //client si disconnette e apre una nuova pagina html con scritto messaggio di disconnessione
+    }
     // Store the socket ID in the session
     socket.username = socket.id;
     users.push(socket.id); // Add the connected user to the list
@@ -125,10 +129,10 @@ io.sockets.on('connection', function (socket) {
         // Verifica che la matrice dell'avversario esista e sia valida
         if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
             if (playerShips[opponentId][row][col] > 0) {
-                io.to(socket.id).emit('esitoColpo', true, "Colpito!");
+                socket.emit('esitoColpo', true, "Colpito!");
                 console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             } else {
-                io.to(socket.id).emit('esitoColpo', false, "Mancato!");
+                socket.emit('esitoColpo', false, "Mancato!");
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             }
         } else {

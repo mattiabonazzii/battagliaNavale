@@ -59,16 +59,25 @@
         const socket = io.connect('http://127.0.0.1:3000/');
 
         let opponentId;
-        let pezzi_avversari = 21;
+        let pezzi_avversari = 1;
         let shipGrid = []; // Matrice delle navi (10x10)
-
-
+        let isMyTurn;
 
         socket.on('stato', (numClienti, users) => {
             console.log('Utenti connessi:', users); // Stampa gli ID connessi
             // Seleziona un avversario (esempio: il primo ID diverso dal proprio)
             opponentId = users.find(id => id !== socket.id);
         });
+
+        socket.on('yourTurn', isYourTurn => {
+            isMyTurn = isYourTurn;
+            alert('è il tuo turno yippieeee');
+        });
+
+        socket.on('disconnettiti', messaggio => {
+            socket.disconnect();
+            document.body.innerHTML = messaggio;
+        })
 
         socket.on('errore', (messaggio) => {
             alert(messaggio);
@@ -111,15 +120,18 @@
 
         //Metodo per marcare la cella della tabella avversaria
         function markCell(row, col) {
-            hitRow = row;
-            hitCol = col;
+            if (isMyTurn) {
+                hitRow = row;
+                hitCol = col;
 
-            const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
-            if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
-                return;
+                const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
+                if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
+                    return;
 
-            sendHit(row, col, opponentId);
-            cell.innerHTML = "X";// altrimenti marca la cella con una X
+                sendHit(row, col, opponentId);
+                isMyTurn = false;
+                cell.innerHTML = "X";// altrimenti marca la cella con una X
+            }
         }
 
 
