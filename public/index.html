@@ -57,6 +57,7 @@
         const socket = io.connect('http://127.0.0.1:3000/');
 
         let opponentId;
+        let pezzi_avversari = 21;
 
         socket.on('stato', (numClienti, users) => {
             console.log('Utenti connessi:', users); // Stampa gli ID connessi
@@ -68,17 +69,27 @@
             alert(messaggio);
         })
 
-        socket.on('esitoColpo', (esito, messaggio) =>{
-            alert(messaggio);
+        socket.on('esitoColpo', (esito, messaggio) => {
+            if (esito) {
+                document.getElementById(`attack-${hitRow}-${hitCol}`).style.backgroundColor = "red"; //prende l'indirizzo della colonna
+                pezzi_avversari -= 1;
+                alert(`${messaggio}, Mancano: ${pezzi_avversari} segmenti`);
+            }//volendo, mettere alert anche se si sbaglia
         })
 
         function sendHit(row, col, opponent) {
             console.log(opponent)
-            socket.emit('colpo', row - 1,col.charCodeAt(0) - 65, opponent );
+            socket.emit('colpo', row - 1, col.charCodeAt(0) - 65, opponent);
         }
+
+        let hitRow; //le inizializzo nel markcell, vengono utilizzate poi per capire quale casella colorare di rosso
+        let hitCol;
 
         //Metodo per marcare la cella della tabella avversaria
         function markCell(row, col) {
+            hitRow = row;
+            hitCol = col;
+
             const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
             if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
                 return;
