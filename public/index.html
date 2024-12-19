@@ -73,11 +73,22 @@
             if (esito) {
                 document.getElementById(`attack-${hitRow}-${hitCol}`).style.backgroundColor = "red"; //prende l'indirizzo della colonna
                 pezzi_avversari -= 1;
-                alert(`${messaggio} Mancano: ${pezzi_avversari} segmenti`);
+                if (pezzi_avversari === 0) //se si ha vinto, non manda il classico messaggio ma richiama il metodo
+                    terminaGioco();
+                else
+                    alert(`${messaggio} Mancano: ${pezzi_avversari} segmenti`);
             }
             else
-                alert(messaggio)
+                alert(messaggio) //colpo mancato
         })
+
+        //sul socket perdente, verra' richiamato
+        socket.on('sconfitta', (messaggio) => {
+            alert(messaggio);
+            disabilitaGriglia();
+        })
+
+        //###########
 
         function sendHit(row, col, opponent) {
             console.log(opponent)
@@ -99,6 +110,7 @@
             sendHit(row, col, opponentId);
             cell.innerHTML = "X";// altrimenti marca la cella con una X
         }
+
 
         let shipGrid = []; // Matrice delle navi (10x10)
 
@@ -164,8 +176,22 @@
             socket.emit('naviPosizionate', shipGrid);
         }
 
+
+        function terminaGioco() {
+            alert("Hai vinto!")
+            socket.emit('vittoria', opponentId);
+            disabilitaGriglia();
+        }
+
+        //da usare una volta terminata la partita
+        function disabilitaGriglia() {
+            const playerGrid = document.getElementById('playerGrid');
+            playerGrid.style.pointerEvents = 'none';
+        }
+
         // Richiama la funzione per posizionare le navi
         placeShips();
+
     </script>
 </body>
 
