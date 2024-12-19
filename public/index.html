@@ -51,6 +51,8 @@
             <script src="/creaTabella" onload="creaTabella('attack')"></script>
         </tbody>
     </table>
+    <button style="display: none;" id="buttonRivincita" onclick="rivincita()">Rivincita</button>
+
     <!-- Script server -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -58,6 +60,9 @@
 
         let opponentId;
         let pezzi_avversari = 21;
+        let shipGrid = []; // Matrice delle navi (10x10)
+
+
 
         socket.on('stato', (numClienti, users) => {
             console.log('Utenti connessi:', users); // Stampa gli ID connessi
@@ -86,7 +91,13 @@
         socket.on('sconfitta', (messaggio) => {
             alert(messaggio);
             disabilitaGriglia();
+            mostraBottoneRivincita();
         })
+
+        socket.on('rivincita', () => { //ricarica la pagina
+            location.reload();
+        })
+
 
         //###########
 
@@ -112,7 +123,6 @@
         }
 
 
-        let shipGrid = []; // Matrice delle navi (10x10)
 
         function initializeGrid() {
             shipGrid = Array.from({ length: 10 }, () => Array(10).fill(0));
@@ -181,7 +191,18 @@
             alert("Hai vinto!")
             socket.emit('vittoria', opponentId);
             disabilitaGriglia();
+            mostraBottoneRivincita();
         }
+
+        function mostraBottoneRivincita() {
+            document.getElementById("buttonRivincita").style.display = "block";
+        }
+
+        function rivincita() {
+            socket.emit('rivincita', opponentId);
+            location.reload();
+        }
+
 
         //da usare una volta terminata la partita
         function disabilitaGriglia() {
