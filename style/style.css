@@ -1,19 +1,29 @@
 /* Stile generale per la tabella */
 h1 {
-    font-size: 30px;
+    text-align: center;
+    margin-bottom: 20px; /* Aggiunge spazio sotto il titolo */
+    margin-top: 0; /* Rimuove spazio sopra il titolo */
+    font-size: 36px;
+    font-weight: bold;
+    color: #222;
+    position: relative;
+    z-index: 1; /* Porta il titolo sopra gli altri elementi */
 }
 
 table {
     border-collapse: collapse;
-    margin: 20px auto;
+    width: 440px; /* Larghezza fissa */
+    height: 440px; /* Altezza uguale alla larghezza per formare un quadrato */
+    margin: 20px auto; /* Centra le tabelle orizzontalmente */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-family: Arial, sans-serif;
 }
 
+
 /* Celle della tabella */
 td {
-    width: 40px;
-    height: 40px;
+    width: 40px; /* Divide uniformemente la larghezza tra le celle */
+    height: 40px; /* Divide uniformemente l'altezza tra le celle */
     text-align: center;
     border: 1px solid #333;
     cursor: pointer;
@@ -78,9 +88,8 @@ td:hover {
 }
 
 .lancia {
-    background-color: #ff4444;
-    /* Rosso brillante */
-    border: 2px solid #cc0000;
+    background-color: #ff44ff;
+    border: 2px solid #ff00ff;
 }
 
 /* Testo dentro le celle delle navi */
@@ -91,6 +100,21 @@ td:hover {
     color: white;
     font-weight: bold;
 }
+
+/* Stile per il tag <caption> */
+caption {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center; 
+    margin-bottom: 10px; 
+    color: #333; 
+    background-color: #f7f7f7; 
+    padding: 8px 0; 
+    border: 1px solid #ccc;
+    border-radius: 5px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
 
 /* Stile per il pulsante */
 button {
@@ -119,6 +143,7 @@ button:disabled {
 #divTabella {
     text-align: center;
     margin: 20px;
+    padding-top: 30px;
 }
 
 /* Testo per l'esito */
@@ -128,6 +153,24 @@ button:disabled {
     margin: 10px auto;
     font-weight: bold;
 }
+
+#titolo {
+    text-align: center;
+    margin-bottom: 20px; /* Aggiunge spazio sotto il div */
+    margin-top: 0; /* Rimuove spazio sopra il div */
+    font-size: 36px;
+    font-weight: bold;
+    color: #222;
+    position: fixed; /* Rende il titolo sempre visibile e sopra le altre scritte */
+    top: 0; /* Posiziona il titolo in alto */
+    left: 0;
+    width: 100%; /* Fa in modo che il titolo occupi tutta la larghezza */
+    background-color: #fff; /* Imposta uno sfondo per coprire gli elementi sottostanti */
+    z-index: 999; /* Garantisce che il titolo sia sopra gli altri elementi */
+    padding: 10px 0; /* Aggiunge spazio interno al titolo */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombreggiatura per separare il titolo visivamente */
+}
+
 
 /* Ombreggiatura e miglioramenti visivi */
 table,

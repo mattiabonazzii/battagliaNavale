@@ -8,20 +8,15 @@
 </head>
 
 <body>
-    <div style="float: left; padding-left: 10%;" id="intestazione">
-        <h2>Questo è il tuo campo</h2>
-    </div>
-
-    <div style="float: right; padding-right: 25%;" id="intestazione">
-        <h2>Campo avversario</h2>
-
+    <div id="titolo">
+        <h1>Battaglia navale</h1>
     </div>
     <br>
-    <br><br>
-    <div id="divTabella">
 
+    <div id="divTabella">
         <div class="griglie-container">
             <table id="battlefield">
+                <caption>Questo è il tuo campo</caption>
                 <thead>
                     <tr>
                         <th></th>
@@ -43,6 +38,7 @@
             </table>
 
             <table id="playerGrid">
+                <caption>Campo avversario</caption>
                 <thead>
                     <tr>
                         <th></th>
@@ -83,7 +79,6 @@
         let isMyTurn;
 
         socket.on('stato', (numClienti, users) => {
-            console.log('Utenti connessi:', users); // Stampa gli ID connessi
             // Seleziona un avversario (esempio: il primo ID diverso dal proprio)
             opponentId = users.find(id => id !== socket.id);
         });
@@ -105,18 +100,27 @@
         })
 
         socket.on('esitoColpo', (esito, messaggio) => {
-            document.getElementById("textPezziAvversari").innerHTML = `${messaggio} Mancano: ${pezzi_avversari} segmenti`;
-
             const paragrafo = document.getElementById('textEsito');
             if (esito) {
                 document.getElementById(`attack-${hitRow}-${hitCol}`).style.backgroundColor = "red"; //prende l'indirizzo della colonna
                 pezzi_avversari -= 1;
+                paragrafo.innerText = messaggio;
+                document.getElementById("textPezziAvversari").innerHTML = `${messaggio} Mancano: ${pezzi_avversari} segmenti`;
                 if (pezzi_avversari === 0) //se si ha vinto, non manda il classico messaggio ma richiama il metodo
                     terminaGioco();
             }
             else
                 paragrafo.innerText = messaggio; //colpo mancato
 
+        })
+
+        socket.on('barcaColpita', ({ row, col }) =>{
+            console.log(row, ' ',col);
+            r = row + 1;
+            c = String.fromCharCode((col + 65));
+            console.log(r, ' ',c);
+            document.getElementById(`cell-${r}-${c}`).style.backgroundColor = "red";
+            document.getElementById(`cell-${r}-${c}`).innerHTML = "x";
         })
 
         //sul socket perdente, verra' richiamato
@@ -134,7 +138,6 @@
         //###########
 
         function sendHit(row, col, opponent) {
-            console.log(opponent)
             socket.emit('colpo', row - 1, col.charCodeAt(0) - 65, opponent);
         }
 
@@ -159,10 +162,9 @@
             } else {
                 let str = (cntArrabbiato * dimensioneArrabbiato).toString() + 'px';
                 document.getElementById('textArrabbiato').style.fontSize = str;
-                console.log(str);
                 document.getElementById('textArrabbiato').innerHTML = 'Non è il tuo turno!';
 
-                if (cntArrabbiato < 7) { //auemnta la dimensione del testo fino a max 70px
+                if (cntArrabbiato < 4) { //aumenta la dimensione del testo fino a max 40px (diminuito da 70px per evitare pagine troppo grandi su schermi piccoli)
                     cntArrabbiato++;
                 }
             }

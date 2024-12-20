@@ -142,6 +142,7 @@ io.sockets.on('connection', function (socket) {
             if (playerShips[opponentId][row][col] > 0) {
                 io.to(socket.id).emit('esitoColpo', true, "Colpito!");
                 console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
+                io.to(users.find(id => id != socket.id)).emit('barcaColpita', {row, col});
             } else {
                 io.to(socket.id).emit('esitoColpo', false, "Mancato!");
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
