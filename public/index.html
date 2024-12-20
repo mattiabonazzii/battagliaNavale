@@ -8,246 +8,261 @@
 </head>
 
 <body>
+    <div style="float: left; padding-left: 10%;" id="intestazione">
+        <h2>Questo è il tuo campo</h2>
+    </div>
+
+    <div style="float: right; padding-right: 25%;" id="intestazione">
+        <h2>Campo avversario</h2>
+
+    </div>
+    <br>
+    <br><br>
     <div id="divTabella">
 
-        <h3>Questo è il tuo campo</h3>
-        <table id="battlefield">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>A</th>
-                    <th>B</th>
-                    <th>C</th>
-                    <th>D</th>
-                    <th>E</th>
-                    <th>F</th>
-                    <th>G</th>
-                    <th>H</th>
-                    <th>I</th>
-                    <th>J</th>
-                </tr>
-            </thead>
-            <tbody>
-                <script src="/creaTabella" onload="creaTabella('cell')"></script>
-            </tbody>
-        </table>
+        <div class="griglie-container">
+            <table id="battlefield">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>A</th>
+                        <th>B</th>
+                        <th>C</th>
+                        <th>D</th>
+                        <th>E</th>
+                        <th>F</th>
+                        <th>G</th>
+                        <th>H</th>
+                        <th>I</th>
+                        <th>J</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <script src="/creaTabella" onload="creaTabella('cell')"></script>
+                </tbody>
+            </table>
 
-        <p id='textArrabbiato'></p>
+            <table id="playerGrid">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>A</th>
+                        <th>B</th>
+                        <th>C</th>
+                        <th>D</th>
+                        <th>E</th>
+                        <th>F</th>
+                        <th>G</th>
+                        <th>H</th>
+                        <th>I</th>
+                        <th>J</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <script src="/creaTabella" onload="creaTabella('attack')"></script>
+                </tbody>
+            </table>
+        </div>
 
-        <h3>Campo avversario</h3>
-        <table id="playerGrid">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>A</th>
-                    <th>B</th>
-                    <th>C</th>
-                    <th>D</th>
-                    <th>E</th>
-                    <th>F</th>
-                    <th>G</th>
-                    <th>H</th>
-                    <th>I</th>
-                    <th>J</th>
-                </tr>
-            </thead>
-            <tbody>
-                <script src="/creaTabella" onload="creaTabella('attack')"></script>
-            </tbody>
-        </table>
+        <p id="textArrabbiato"></p>
+        <p id="textPezziAvversari"></p>
         <p id="textEsito">Partita iniziata</p>
-        <div>
+        <h1 id="esitoPartita"></h1>
+        <button style="display: none;" id="buttonRivincita" onclick="rivincita()">Rivincita</button>
 
-            <button style="display: none;" id="buttonRivincita" onclick="rivincita()">Rivincita</button>
+    </div>
 
-            <!-- Script server -->
-            <script src="/socket.io/socket.io.js"></script>
-            <script>
-                const socket = io.connect('http://127.0.0.1:3000/');
+    <!-- Script server -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://127.0.0.1:3000/');
 
-                let opponentId;
-                let pezzi_avversari = 21;
-                let shipGrid = []; // Matrice delle navi (10x10)
-                let isMyTurn;
+        let opponentId;
+        let pezzi_avversari = 21;
+        let shipGrid = []; // Matrice delle navi (10x10)
+        let isMyTurn;
 
-                socket.on('stato', (numClienti, users) => {
-                    console.log('Utenti connessi:', users); // Stampa gli ID connessi
-                    // Seleziona un avversario (esempio: il primo ID diverso dal proprio)
-                    opponentId = users.find(id => id !== socket.id);
-                });
+        socket.on('stato', (numClienti, users) => {
+            console.log('Utenti connessi:', users); // Stampa gli ID connessi
+            // Seleziona un avversario (esempio: il primo ID diverso dal proprio)
+            opponentId = users.find(id => id !== socket.id);
+        });
 
-                socket.on('yourTurn', isYourTurn => {
-                    isMyTurn = isYourTurn;
-                    document.getElementById('textArrabbiato').innerHTML = ''
-                    cntArrabbiato = 1;
-                    document.getElementById('textEsito').innerHTML = 'È il tuo turno!'
-                });
+        socket.on('yourTurn', isYourTurn => {
+            isMyTurn = isYourTurn;
+            document.getElementById('textArrabbiato').innerHTML = ''
+            cntArrabbiato = 1;
+            document.getElementById('textEsito').innerHTML = 'È il tuo turno!'
+        });
 
-                socket.on('disconnettiti', messaggio => {
-                    socket.disconnect();
-                    document.body.innerHTML = messaggio;
-                })
+        socket.on('disconnettiti', messaggio => {
+            socket.disconnect();
+            document.body.innerHTML = messaggio;
+        })
 
-                socket.on('errore', (messaggio) => {
-                    alert(messaggio);
-                })
+        socket.on('errore', (messaggio) => {
+            alert(messaggio);
+        })
 
-                socket.on('esitoColpo', (esito, messaggio) => {
-                    const paragrafo = document.getElementById('textEsito');
-                    if (esito) {
-                        document.getElementById(`attack-${hitRow}-${hitCol}`).style.backgroundColor = "red"; //prende l'indirizzo della colonna
-                        pezzi_avversari -= 1;
-                        if (pezzi_avversari === 0) //se si ha vinto, non manda il classico messaggio ma richiama il metodo
-                            terminaGioco();
-                        else
-                            paragrafo.innerText = `${messaggio} Mancano: ${pezzi_avversari} segmenti`;
-                    }
-                    else
-                        paragrafo.innerText = messaggio; //colpo mancato
+        socket.on('esitoColpo', (esito, messaggio) => {
+            document.getElementById("textPezziAvversari").innerHTML = `${messaggio} Mancano: ${pezzi_avversari} segmenti`;
 
-                })
+            const paragrafo = document.getElementById('textEsito');
+            if (esito) {
+                document.getElementById(`attack-${hitRow}-${hitCol}`).style.backgroundColor = "red"; //prende l'indirizzo della colonna
+                pezzi_avversari -= 1;
+                if (pezzi_avversari === 0) //se si ha vinto, non manda il classico messaggio ma richiama il metodo
+                    terminaGioco();
+            }
+            else
+                paragrafo.innerText = messaggio; //colpo mancato
 
-                //sul socket perdente, verra' richiamato
-                socket.on('sconfitta', (messaggio) => {
-                    alert(messaggio);
-                    disabilitaGriglia();
-                    mostraBottoneRivincita();
-                })
+        })
 
-                socket.on('rivincita', () => { //ricarica la pagina
-                    location.reload();
-                })
+        //sul socket perdente, verra' richiamato
+        socket.on('sconfitta', () => {
+            disabilitaGriglia();
+            mostraBottoneRivincita();
+            document.getElementById("esitoPartita").innerHTML = "Hai Perso!";
+        })
+
+        socket.on('rivincita', () => { //ricarica la pagina
+            location.reload();
+        })
 
 
-                //###########
+        //###########
 
-                function sendHit(row, col, opponent) {
-                    console.log(opponent)
-                    socket.emit('colpo', row - 1, col.charCodeAt(0) - 65, opponent);
+        function sendHit(row, col, opponent) {
+            console.log(opponent)
+            socket.emit('colpo', row - 1, col.charCodeAt(0) - 65, opponent);
+        }
+
+        let hitRow; //le inizializzo nel markcell, vengono utilizzate poi per capire quale casella colorare di rosso
+        let hitCol;
+        let cntArrabbiato = 1;
+        let dimensioneArrabbiato = 10;
+
+        //Metodo per marcare la cella della tabella avversaria
+        function markCell(row, col) {
+            if (isMyTurn) {
+                hitRow = row;
+                hitCol = col;
+
+                const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
+                if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
+                    return;
+
+                sendHit(row, col, opponentId);
+                isMyTurn = false;
+                cell.innerHTML = "X";// altrimenti marca la cella con una X
+            } else {
+                let str = (cntArrabbiato * dimensioneArrabbiato).toString() + 'px';
+                document.getElementById('textArrabbiato').style.fontSize = str;
+                console.log(str);
+                document.getElementById('textArrabbiato').innerHTML = 'Non è il tuo turno!';
+
+                if (cntArrabbiato < 7) { //auemnta la dimensione del testo fino a max 70px
+                    cntArrabbiato++;
+                }
+            }
+        }
+
+
+
+        function initializeGrid() {
+            shipGrid = Array.from({ length: 10 }, () => Array(10).fill(0));
+        }
+
+        function placeShips() {
+            initializeGrid()
+            const rows = 10;
+            const cols = 10;
+
+            const navi = [
+                { name: 'corazzata', size: 4, count: 1, id: 1 },
+                { name: 'sottomarino', size: 3, count: 3, id: 2 },
+                { name: 'corvetta', size: 2, count: 3, id: 3 },
+                { name: 'lancia', size: 1, count: 2, id: 4 }
+            ];
+
+            // Verifica se è possibile posizionare una nave
+            function canPlaceShip(x, y, size, direction) {
+                if (direction === 'horizontal' && y + size > cols) return false;
+                if (direction === 'vertical' && x + size > rows) return false;
+
+                for (let i = 0; i < size; i++) {
+                    const placeX = direction === 'horizontal' ? x : x + i;
+                    const placeY = direction === 'horizontal' ? y + i : y;
+                    if (shipGrid[placeX][placeY] !== 0) return false;
                 }
 
-                let hitRow; //le inizializzo nel markcell, vengono utilizzate poi per capire quale casella colorare di rosso
-                let hitCol;
-                let cntArrabbiato = 1;
-                let dimensioneArrabbiato = 10;
+                return true;
+            }
 
-                //Metodo per marcare la cella della tabella avversaria
-                function markCell(row, col) {
-                    if (isMyTurn) {
-                        hitRow = row;
-                        hitCol = col;
+            // Posiziona una nave nella matrice e aggiorna la griglia HTML
+            function placeShip(x, y, size, direction, className) {
+                for (let i = 0; i < size; i++) {
+                    const placeX = direction === 'horizontal' ? x : x + i;
+                    const placeY = direction === 'horizontal' ? y + i : y;
 
-                        const cell = document.getElementById(`attack-${row}-${col}`); //prende l'indirizzo della colonna
-                        if (cell.innerHTML === "X") // Controlla se la cella è già stata marcata
-                            return;
-
-                        sendHit(row, col, opponentId);
-                        isMyTurn = false;
-                        cell.innerHTML = "X";// altrimenti marca la cella con una X
-                    } else {
-                        let str = (cntArrabbiato * dimensioneArrabbiato).toString() + 'px'
-                        document.getElementById('textArrabbiato').style.fontSize = str
-                        console.log(str);
-                        document.getElementById('textArrabbiato').innerHTML = 'Non è il tuo turno! RICCHIONE'
-                        cntArrabbiato++;
-                    }
+                    shipGrid[placeX][placeY] = size;
+                    const cellId = `cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`;
+                    const cell = document.getElementById(cellId);
+                    cell.classList.add(className);
                 }
+            }
 
+            // Genera le navi
+            navi.forEach(nave => {
+                for (let i = 0; i < nave.count; i++) {
+                    let placed = false;
+                    while (!placed) {
+                        const x = Math.floor(Math.random() * rows);
+                        const y = Math.floor(Math.random() * cols);
+                        const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
 
-
-                function initializeGrid() {
-                    shipGrid = Array.from({ length: 10 }, () => Array(10).fill(0));
-                }
-
-                function placeShips() {
-                    initializeGrid()
-                    const rows = 10;
-                    const cols = 10;
-
-                    const navi = [
-                        { name: 'corazzata', size: 4, count: 1, id: 1 },
-                        { name: 'sottomarino', size: 3, count: 3, id: 2 },
-                        { name: 'corvetta', size: 2, count: 3, id: 3 },
-                        { name: 'lancia', size: 1, count: 2, id: 4 }
-                    ];
-
-                    // Verifica se è possibile posizionare una nave
-                    function canPlaceShip(x, y, size, direction) {
-                        if (direction === 'horizontal' && y + size > cols) return false;
-                        if (direction === 'vertical' && x + size > rows) return false;
-
-                        for (let i = 0; i < size; i++) {
-                            const placeX = direction === 'horizontal' ? x : x + i;
-                            const placeY = direction === 'horizontal' ? y + i : y;
-                            if (shipGrid[placeX][placeY] !== 0) return false;
+                        if (canPlaceShip(x, y, nave.size, direction)) {
+                            placeShip(x, y, nave.size, direction, nave.name);
+                            placed = true;
                         }
-
-                        return true;
                     }
-
-                    // Posiziona una nave nella matrice e aggiorna la griglia HTML
-                    function placeShip(x, y, size, direction, className) {
-                        for (let i = 0; i < size; i++) {
-                            const placeX = direction === 'horizontal' ? x : x + i;
-                            const placeY = direction === 'horizontal' ? y + i : y;
-
-                            shipGrid[placeX][placeY] = size;
-                            const cellId = `cell-${placeX + 1}-${String.fromCharCode(65 + placeY)}`;
-                            const cell = document.getElementById(cellId);
-                            cell.classList.add(className);
-                        }
-                    }
-
-                    // Genera le navi
-                    navi.forEach(nave => {
-                        for (let i = 0; i < nave.count; i++) {
-                            let placed = false;
-                            while (!placed) {
-                                const x = Math.floor(Math.random() * rows);
-                                const y = Math.floor(Math.random() * cols);
-                                const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
-
-                                if (canPlaceShip(x, y, nave.size, direction)) {
-                                    placeShip(x, y, nave.size, direction, nave.name);
-                                    placed = true;
-                                }
-                            }
-                        }
-                    });
-                    socket.emit('naviPosizionate', shipGrid);
                 }
+            });
+            socket.emit('naviPosizionate', shipGrid);
+        }
 
 
-                function terminaGioco() {
-                    alert("Hai vinto!")
-                    socket.emit('vittoria', opponentId);
-                    disabilitaGriglia();
-                    mostraBottoneRivincita();
-                }
+        function terminaGioco() {
+            document.getElementById("esitoPartita").innerHTML = "Hai vinto!";
 
-                function mostraBottoneRivincita() {
-                    document.getElementById("buttonRivincita").style.display = "block";
-                }
+            socket.emit('vittoria', opponentId);
+            disabilitaGriglia();
+            mostraBottoneRivincita();
+        }
 
-                function rivincita() {
-                    socket.emit('rivincita', opponentId);
-                    location.reload();
-                }
+        function mostraBottoneRivincita() {
+            document.getElementById("buttonRivincita").style.display = "block";
+        }
 
+        function rivincita() {
+            socket.emit('rivincita', opponentId);
+            location.reload();
+        }
 
-                //da usare una volta terminata la partita
-                function disabilitaGriglia() {
-                    const playerGrid = document.getElementById('playerGrid');
-                    playerGrid.style.pointerEvents = 'none';
-                }
+        //da usare una volta terminata la partita
+        function disabilitaGriglia() {
+            const playerGrid = document.getElementById('playerGrid');
+            playerGrid.style.pointerEvents = 'none';
+        }
 
-                // Richiama la funzione per posizionare le navi
-                placeShips();
+        // Richiama la funzione per posizionare le navi
+        placeShips();
 
-            </script>
+    </script>
 
-            <!-- <script src="/bloccaRicarica"></script> -->
-            <!-- script che blocca la ricarica del documento per evitare incongruenza nelle matrici  -->
+    <!-- <script src="/bloccaRicarica"></script> -->
+    <!-- script che blocca la ricarica del documento per evitare incongruenza nelle matrici  -->
 </body>
 
 </html>
