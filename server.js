@@ -173,7 +173,7 @@ io.sockets.on('connection', function (socket) {
 
     //invia al client perdente il relatico messaggio
     socket.on('vittoria', (opponentId) => {
-        io.to(opponentId).emit('sconfitta', "Hai perso...");
+        io.to(opponentId).emit('sconfitta');
     });
 
     socket.on('rivincita', (opponentId)=>{
