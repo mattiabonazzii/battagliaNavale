@@ -10,7 +10,7 @@
 <body>
     <div id="divTabella">
 
-        <h3>Tabellone Battaglia Navale - Con Navi</h3>
+        <h3>Questo è il tuo campo</h3>
         <table id="battlefield">
             <thead>
                 <tr>
@@ -32,7 +32,9 @@
             </tbody>
         </table>
 
-        <h3>Tabellone Battaglia Navale - Clicca per Inserire X</h3>
+        <p id='textArrabbiato'></p>
+
+        <h3>Campo avversario</h3>
         <table id="playerGrid">
             <thead>
                 <tr>
@@ -76,7 +78,9 @@
 
                 socket.on('yourTurn', isYourTurn => {
                     isMyTurn = isYourTurn;
-                    alert('è il tuo turno yippieeee');
+                    document.getElementById('textArrabbiato').innerHTML = ''
+                    cntArrabbiato = 1;
+                    document.getElementById('textEsito').innerHTML = 'È il tuo turno!'
                 });
 
                 socket.on('disconnettiti', messaggio => {
@@ -124,6 +128,8 @@
 
                 let hitRow; //le inizializzo nel markcell, vengono utilizzate poi per capire quale casella colorare di rosso
                 let hitCol;
+                let cntArrabbiato = 1;
+                let dimensioneArrabbiato = 10;
 
                 //Metodo per marcare la cella della tabella avversaria
                 function markCell(row, col) {
@@ -139,7 +145,11 @@
                         isMyTurn = false;
                         cell.innerHTML = "X";// altrimenti marca la cella con una X
                     } else {
-                        alert('non è il tuo turno!!!');
+                        let str = (cntArrabbiato * dimensioneArrabbiato).toString() + 'px'
+                        document.getElementById('textArrabbiato').style.fontSize = str
+                        console.log(str);
+                        document.getElementById('textArrabbiato').innerHTML = 'Non è il tuo turno! RICCHIONE'
+                        cntArrabbiato++;
                     }
                 }
 
@@ -236,7 +246,7 @@
 
             </script>
 
-            <script src="/bloccaRicarica"></script>
+            <!-- <script src="/bloccaRicarica"></script> -->
             <!-- script che blocca la ricarica del documento per evitare incongruenza nelle matrici  -->
 </body>
 
