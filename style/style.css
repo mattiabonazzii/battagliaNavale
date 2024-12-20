@@ -1,36 +1,128 @@
+/* Stile generale per la tabella */
 table {
     border-collapse: collapse;
-    margin: 20px;
+    margin: 20px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
 }
 
+/* Celle della tabella */
 td {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     text-align: center;
-    border: 1px solid black;
+    border: 1px solid #333;
     cursor: pointer;
     position: relative;
+    background-color: #f0f0f0;
+    transition: background-color 0.3s ease;
 }
 
+/* Celle colpite */
+td.hit {
+    background-color: red !important;
+    color: white;
+    cursor: not-allowed;
+}
+
+/* Celle mancanti */
+td.miss {
+    background-color: #ddd !important;
+    color: #888;
+    cursor: not-allowed;
+}
+
+/* Celle disabilitate */
+td.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Intestazione delle colonne */
 th {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     text-align: center;
-    border: 1px solid black;
+    border: 1px solid #333;
+    background-color: #444;
+    color: white;
+    font-weight: bold;
 }
 
+/* Hover sulle celle */
+td:hover {
+    background-color: #e0e0e0;
+}
+
+/* Stile per tipi di nave */
 .corazzata {
-    background-color: lightblue;
+    background-color: #00aaff; /* Azzurro brillante */
+    border: 2px solid #0077cc;
 }
 
 .sottomarino {
-    background-color: lightgreen;
+    background-color: #33cc33; /* Verde brillante */
+    border: 2px solid #228b22;
 }
 
 .corvetta {
-    background-color: lightsalmon;
+    background-color: #ff9933; /* Arancione brillante */
+    border: 2px solid #cc7700;
 }
 
 .lancia {
-    background-color: lightcoral;
+    background-color: #ff4444; /* Rosso brillante */
+    border: 2px solid #cc0000;
+}
+
+/* Testo dentro le celle delle navi */
+.corazzata,
+.sottomarino,
+.corvetta,
+.lancia {
+    color: white;
+    font-weight: bold;
+}
+
+/* Stile per il pulsante */
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #0077cc;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #005999;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Div che contiene le tabelle */
+#divTabella {
+    text-align: center;
+    margin: 20px;
+}
+
+/* Testo per l'esito */
+#textEsito {
+    font-size: 18px;
+    color: #333;
+    margin: 10px auto;
+    font-weight: bold;
+}
+
+/* Ombreggiatura e miglioramenti visivi */
+table,
+button {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
