@@ -1,4 +1,8 @@
 /* Stile generale per la tabella */
+h1 {
+    font-size: 30px;
+}
+
 table {
     border-collapse: collapse;
     margin: 20px auto;
@@ -56,22 +60,26 @@ td:hover {
 
 /* Stile per tipi di nave */
 .corazzata {
-    background-color: #00aaff; /* Azzurro brillante */
+    background-color: #00aaff;
+    /* Azzurro brillante */
     border: 2px solid #0077cc;
 }
 
 .sottomarino {
-    background-color: #33cc33; /* Verde brillante */
+    background-color: #33cc33;
+    /* Verde brillante */
     border: 2px solid #228b22;
 }
 
 .corvetta {
-    background-color: #ff9933; /* Arancione brillante */
+    background-color: #ff9933;
+    /* Arancione brillante */
     border: 2px solid #cc7700;
 }
 
 .lancia {
-    background-color: #ff4444; /* Rosso brillante */
+    background-color: #ff4444;
+    /* Rosso brillante */
     border: 2px solid #cc0000;
 }
 
@@ -125,4 +133,32 @@ button:disabled {
 table,
 button {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.griglie-container {
+    display: flex;
+    justify-content: center;
+    /* Centra le colonne orizzontalmente */
+    align-items: flex-start;
+    /* Allinea le colonne in alto */
+    gap: 30px;
+    /* Spaziatura tra le colonne */
+    margin: 20px 0;
+    /* Spaziatura sopra e sotto */
+}
+
+.colonna {
+    display: flex;
+    flex-direction: column;
+    /* Disposizione verticale: tabella sopra e titolo sotto */
+    align-items: center;
+    /* Centra il contenuto orizzontalmente */
+}
+
+h3 {
+    margin-top: 10px;
+    /* Spaziatura tra la tabella e l'etichetta */
+    font-size: 18px;
+    text-align: center;
+    color: #333;
 }
