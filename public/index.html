@@ -114,7 +114,7 @@
 
         })
 
-        socket.on('barcaColpita', ({ row, col }) =>{
+        socket.on('barcaColpita', ({ row, col }) =>{ //Richiamata dal server. Colora la casella di rosso se si viene colpiti
             console.log(row, ' ',col);
             r = row + 1;
             c = String.fromCharCode((col + 65));
@@ -173,7 +173,7 @@
 
 
         function initializeGrid() {
-            shipGrid = Array.from({ length: 10 }, () => Array(10).fill(0));
+            shipGrid = Array.from({ length: 10 }, () => Array(10).fill(0)); //Crea e popola la matrice con 0
         }
 
         function placeShips() {
@@ -248,8 +248,8 @@
         }
 
         function rivincita() {
-            socket.emit('rivincita', opponentId);
-            location.reload();
+            socket.emit('rivincita', opponentId); //Chiamata al server che ricarica anche la pagina dell'avversario
+            location.reload(); //ricarica la pagina locale
         }
 
         //da usare una volta terminata la partita
