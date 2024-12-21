@@ -55,6 +55,9 @@ function requestHandler(request, response) {
             case "/creaTabella":
                 requestAnswerer(urlPath, "script/tabella.js", response);
                 break;
+            case '/gestioneIndex':
+                requestAnswerer(urlPath, "script/gestioneIndex.js", response)
+                break;
             case "/bloccaRicarica":
                 requestAnswerer(urlPath, "script/bloccaRicarica.js", response)
                 break;
@@ -86,16 +89,21 @@ const io = require("socket.io")(server, {
     },
 });
 
+function controlla() {
+
+}
+
+let playerShipsId = {};
 const playerShips = {}; // Oggetto per salvare le navi di ciascun giocatore
 
 // CREA STANZE!
 io.sockets.on('connection', function (socket) {
-    if(users.length == 2){
-        socket.emit('disconnettiti', '<h1> Ci dispiace, non c\'è posto per te ora, riprova più tardi</h1>'); 
+    if (users.length == 2) {
+        socket.emit('disconnettiti', '<h1> Ci dispiace, non c\'è posto per te ora, riprova più tardi</h1>');
         //client si disconnette e apre una nuova pagina html con scritto messaggio di disconnessione
     }
-    
-    if(users.length == 1){ 
+
+    if (users.length == 1) {
         // è un modo un po storto per evitare che il primo client possa mandare colpi quando il secondo non si è ancora connesso
         socket.emit('yourTurn', true);
     }
@@ -104,7 +112,7 @@ io.sockets.on('connection', function (socket) {
     users.push(socket.id); // Add the connected user to the list
     console.log('Cliente connesso: ' + socket.id);
 
-    
+
 
     // Notify the client about the connection
     socket.emit('connesso', `${ip} porta: ${port}`);
@@ -113,6 +121,10 @@ io.sockets.on('connection', function (socket) {
     // Notify all clients about the number of connected users
     io.emit('stato', numClienti, users);
     console.log('Clienti connessi:', numClienti);
+
+    socket.on('idNavi', (arrayNavi) => {
+        playerShipsId[socket.id] = arrayNavi;
+    });
 
     // Ricezione della matrice delle navi
     socket.on('naviPosizionate', (matriceNavi) => {
@@ -136,23 +148,54 @@ io.sockets.on('connection', function (socket) {
         const row = r;
         const col = c;
         const opponentId = opponent;
-
-        // Verifica che la matrice dell'avversario esista e sia valida
-        if (playerShips[opponentId] && playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
+    
+        // Verifica che la matrice dell'avversario esista e che la cella specifica sia valida
+        if (playerShips[opponentId] && Array.isArray(playerShips[opponentId]) &&
+            playerShips[opponentId][row] && typeof playerShips[opponentId][row][col] !== 'undefined') {
+    
             if (playerShips[opponentId][row][col] > 0) {
                 io.to(socket.id).emit('esitoColpo', true, "Colpito!");
                 console.log(`Colpo a segno da ${socket.id} su ${opponentId} in (${row}, ${col})`);
-                io.to(users.find(id => id != socket.id)).emit('barcaColpita', {row, col});
+                io.to(users.find(id => id !== socket.id)).emit('barcaColpita', { row, col });
+    
+                // Crea l'ID della cella
+                const stringaId = `${row}${col}`;
+                console.log('stringa id:', stringaId);
+    
+                // Cerca la nave corrispondente nella mappa dell'avversario
+                const naviAvversario = playerShipsId[opponentId];
+                if (naviAvversario) {
+                    // Trova l'ID della nave corrente
+                    const naveColpita = naviAvversario.find(n => n.strId === stringaId);
+                    if (naveColpita) {
+                        const tempId = naveColpita.temp;
+                        console.log('ID nave colpita:', tempId);
+    
+                        // Rimuovi questa cella dalla mappa
+                        const index = naviAvversario.findIndex(n => n.strId === stringaId);
+                        if (index !== -1) naviAvversario.splice(index, 1);
+    
+                        console.log('Rimanenti navi:', naviAvversario);
+    
+                        // Verifica se la nave è stata completamente distrutta
+                        const naveDistrutta = !naviAvversario.some(n => n.temp === tempId);
+                        if (naveDistrutta) {
+                            socket.emit('barcaAffondata', 'Hai affondato una barca!');
+                        }
+                    }
+                }
             } else {
                 io.to(socket.id).emit('esitoColpo', false, "Mancato!");
                 console.log(`Colpo mancato da ${socket.id} su ${opponentId} in (${row}, ${col})`);
             }
-            io.to(users.find(id => id != socket.id)).emit('yourTurn', true);
+            io.to(users.find(id => id !== socket.id)).emit('yourTurn', true);
         } else {
             console.error(`Errore: matrice dell'avversario ${opponentId} non trovata o cella non valida (${row}, ${col})`);
             socket.emit('errore', 'Matrice dell\'avversario non valida o cella inesistente.');
         }
     });
+    
+    
 
     // Handle disconnection
     socket.on('disconnect', function () {
@@ -177,7 +220,7 @@ io.sockets.on('connection', function (socket) {
         io.to(opponentId).emit('sconfitta');
     });
 
-    socket.on('rivincita', (opponentId)=>{
+    socket.on('rivincita', (opponentId) => {
         io.to(opponentId).emit('rivincita')
     });
 });
