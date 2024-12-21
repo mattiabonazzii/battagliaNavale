@@ -33,11 +33,15 @@ socket.on('esitoColpo', (esito, messaggio) => {
         pezzi_avversari -= 1;
         paragrafo.innerText = messaggio;
         document.getElementById("textPezziAvversari").innerHTML = `${messaggio} Mancano: ${pezzi_avversari} segmenti`;
+        document.getElementById("textAffondata").innerHTML = '';
         if (pezzi_avversari === 0) //se si ha vinto, non manda il classico messaggio ma richiama il metodo
             terminaGioco();
     }
-    else
+    else{
         paragrafo.innerText = messaggio; //colpo mancato
+        document.getElementById("textAffondata").innerHTML = '';
+    }
+        
 
 })
 
